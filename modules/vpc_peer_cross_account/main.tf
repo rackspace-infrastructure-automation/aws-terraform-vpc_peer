@@ -1,3 +1,56 @@
+/**
+* # aws-terraform-vpc_peer/modules/vpc_peer_cross_account
+*
+*This module requires AWS Credentials for the Acceptor account.
+*
+*To use the `cross_account.tf` or `inter_region.tf` examples, create a file called `secrets.tf` in the `example` folder, and populate it with the following, replacing the X's with the Acceptor's account credentials.
+*
+***NOTE:** To create an inter-region peering connection, specify the origin AWS account number as the value for the `peer_owner_id` parameter. You must also set the `is_inter_region` parameter to `true` in order to prevent the module from attempting to set unsupported peering connection options.
+*
+*## Basic Usage
+*
+*```
+*module "cross_account_vpc_peer" {
+*  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_peer//modules/vpc_peer_cross_account?ref=v0.0.2"
+*  vpc_id = "${module.base_network.vpc_id}"
+*
+*  # VPC in acceptor account vpc-XXXXXXXXX
+*  peer_vpc_id = "vpc-XXXXXXXXX"
+*
+*  # Acceptor account number
+*  peer_owner_id = "XXXXXXXXXXXXX"
+*
+*  # Acceptor VPC Region
+*  peer_region = "us-west-2"
+*
+*  # Acceptor Secret Key. Use a local secrets.tf file
+*  acceptor_access_key = "${var.acceptor_access_key}"
+*  acceptor_secret_key = "${var.acceptor_secret_key}"
+*
+*  vpc_cidr_range = "172.18.0.0/16"
+*
+*  # Acceptor cidr Range e.g. 172.19.0.0/16
+*  peer_cidr_range = "X.X.X.X/16"
+*
+*  vpc_route_1_enable   = true
+*  vpc_route_1_table_id = "${element(module.base_network.private_route_tables, 0)}"
+*  vpc_route_2_enable   = true
+*  vpc_route_2_table_id = "${element(module.base_network.private_route_tables, 1)}"
+*
+*  # Acceptor Route Tables
+*  # Acceptor Route Table ID rtb-XXXXXXX
+*  peer_route_1_enable = true
+*
+*  peer_route_1_table_id = "rtb-XXXXX"
+*  peer_route_2_enable   = true
+*  peer_route_2_table_id = "rtb-XXXXX"
+*}
+*```
+*
+* Full working references are available at [examples](examples)
+*
+*/
+
 locals {
   tags {
     ServiceProvider = "Rackspace"
