@@ -3,7 +3,9 @@
 ## Basic Usage
 This module requires AWS Credentials for the Acceptor account.
 
-To use the `cross_account.tf` example create a file called `secrets.tf` in the `example` folder and populate it with the following, replacing the X's with the Acceptor's account credentials.
+To use the `cross_account.tf` or `inter_region.tf` examples, create a file called `secrets.tf` in the `example` folder, and populate it with the following, replacing the X's with the Acceptor's account credentials.
+
+**NOTE:** To create an inter-region peering connection, specify the origin AWS account number as the value for the `peer_owner_id` parameter. You must also set the `is_inter_region` parameter to `true` in order to prevent the module from attempting to set unsupported peering connection options.
 
 ```
 variable "acceptor_access_key" {
@@ -24,6 +26,7 @@ variable "acceptor_secret_key" {
 | allow_remote_vpc_dns_resolution | Allow a local VPC to resolve public DNS hostnames to private IP addresses when queried from instances in the peer VPC. | string | `true` | no |
 | auto_accept | Accept the peering (both VPCs need to be in the same AWS account). (OPTIONAL). | string | `false` | no |
 | environment | Application environment for which this network is being created. one of: ('Development', 'Integration', 'PreProduction', 'Production', 'QA', 'Staging', 'Test') | string | `Development` | no |
+| is_inter_region | Whether or not the VPC Peering connection being established is inter-region. | string | `false` | no |
 | peer_cidr_range | Peer VPC CIDR Range e.g. 172.19.0.0/16 | string | `172.19.0.0/16` | no |
 | peer_owner_id | The AWS account ID of the owner of the peer VPC. Defaults to the account ID the AWS provider is currently connected to. (OPTIONAL) | string | `` | no |
 | peer_region | The region of the accepter VPC of the [VPC Peering Connection]. auto_accept must be false, and use the aws_vpc_peering_connection_accepter to manage the accepter side. (OPTIONAL) | string | `` | no |

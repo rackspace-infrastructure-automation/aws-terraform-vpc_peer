@@ -54,6 +54,12 @@ variable "acceptor_secret_key" {
   type        = "string"
 }
 
+variable "is_inter_region" {
+  description = "Whether or not the VPC Peering connection being established is inter-region."
+  type        = "string"
+  default     = false
+}
+
 #########################
 #     VPC CIDR Range    #
 #########################
