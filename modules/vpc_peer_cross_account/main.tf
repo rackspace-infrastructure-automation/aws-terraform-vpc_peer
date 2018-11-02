@@ -42,7 +42,7 @@ resource "aws_vpc_peering_connection_accepter" "peer" {
 # create an explicit dependency on the accepter.
 
 resource "aws_vpc_peering_connection_options" "requester" {
-  count                     = "${var.is_cross_region ? 0 : 1}"
+  count                     = "${var.is_inter_region ? 0 : 1}"
   vpc_peering_connection_id = "${aws_vpc_peering_connection_accepter.peer.id}"
 
   requester {
@@ -51,7 +51,7 @@ resource "aws_vpc_peering_connection_options" "requester" {
 }
 
 resource "aws_vpc_peering_connection_options" "accepter" {
-  count                     = "${var.is_cross_region ? 0 : 1}"
+  count                     = "${var.is_inter_region ? 0 : 1}"
   provider                  = "aws.peer"
   vpc_peering_connection_id = "${aws_vpc_peering_connection_accepter.peer.id}"
 
