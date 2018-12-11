@@ -4,7 +4,7 @@ provider "aws" {
 }
 
 module "base_network" {
-  source              = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_basenetwork?ref=v0.0.1"
+  source              = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_basenetwork?ref=v0.0.6"
   vpc_name            = "VPC-Peer-Origin"
   cidr_range          = "172.18.0.0/16"
   public_cidr_ranges  = ["172.18.168.0/22", "172.18.172.0/22"]
@@ -12,7 +12,7 @@ module "base_network" {
 }
 
 module "peer_base_network" {
-  source              = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_basenetwork?ref=v0.0.1"
+  source              = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_basenetwork?ref=v0.0.6"
   vpc_name            = "VPC-Peer-Accepter"
   cidr_range          = "10.0.0.0/16"
   public_cidr_ranges  = ["10.0.1.0/24", "10.0.3.0/24"]
@@ -20,7 +20,7 @@ module "peer_base_network" {
 }
 
 module "vpc_peer" {
-  source                          = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_peer//modules/vpc_peer?ref=v0.0.1"
+  source                          = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_peer//modules/vpc_peer?ref=v0.0.2"
   vpc_id                          = "${module.base_network.vpc_id}"
   peer_vpc_id                     = "${module.peer_base_network.vpc_id}"
   auto_accept                     = true

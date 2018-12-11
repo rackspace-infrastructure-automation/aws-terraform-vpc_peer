@@ -9,7 +9,7 @@ provider "aws" {
 }
 
 module "base_network" {
-  source              = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_basenetwork?ref=v0.0.1"
+  source              = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_basenetwork?ref=v0.0.6"
   vpc_name            = "VPC-Peer-Origin"
   cidr_range          = "172.18.0.0/16"
   public_cidr_ranges  = ["172.18.168.0/22", "172.18.172.0/22"]
@@ -18,7 +18,7 @@ module "base_network" {
 }
 
 module "base_network_target" {
-  source              = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_basenetwork?ref=v0.0.1"
+  source              = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_basenetwork?ref=v0.0.6"
   vpc_name            = "VPC-Peer-Target"
   cidr_range          = "172.19.0.0/16"
   public_cidr_ranges  = ["172.19.168.0/22", "172.19.172.0/22"]

@@ -12,7 +12,7 @@ module "base_network" {
 }
 
 module "cross_account_vpc_peer" {
-  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_peer//modules/vpc_peer_cross_account?ref=v0.0.1"
+  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_peer//modules/vpc_peer_cross_account?ref=v0.0.2"
   vpc_id = "${module.base_network.vpc_id}"
 
   # VPC in acceptor account vpc-XXXXXXXXX
