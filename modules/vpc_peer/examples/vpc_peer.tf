@@ -40,11 +40,3 @@ module "vpc_peer" {
   peer_route_2_enable   = true
   peer_route_2_table_id = "${element(module.peer_base_network.private_route_tables, 1)}"
 }
-
-output "peer_id_output" {
-  value = "${module.vpc_peer.id}"
-}
-
-output "accept_status_output" {
-  value = "${module.vpc_peer.accept_status}"
-}
