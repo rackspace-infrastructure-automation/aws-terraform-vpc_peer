@@ -1,3 +1,38 @@
+/**
+* # aws-terraform-vpc_peer/modules/vpc_peer
+*
+*The module sets up a VPC peer within an AWS Account or in an alternate AWS Account.
+*
+*## Basic Usage
+*
+*```
+*module "vpc_peer" {
+*  source                          = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_peer//modules/vpc_peer?ref=v0.0.2"
+*  vpc_id                          = "${module.base_network.vpc_id}"
+*  peer_vpc_id                     = "${module.peer_base_network.vpc_id}"
+*  auto_accept                     = true
+*  allow_remote_vpc_dns_resolution = true
+*  vpc_cidr_range                  = "172.18.0.0/16"
+*  peer_cidr_range                 = "10.0.0.0/16"
+*
+*  #VPC Routes
+*  vpc_route_1_enable   = true
+*  vpc_route_1_table_id = "${element(module.base_network.private_route_tables, 0)}"
+*  vpc_route_2_enable   = true
+*  vpc_route_2_table_id = "${element(module.base_network.private_route_tables, 1)}"
+*
+*  # Peer Routes
+*  peer_route_1_enable   = true
+*  peer_route_1_table_id = "${element(module.peer_base_network.private_route_tables, 0)}"
+*  peer_route_2_enable   = true
+*  peer_route_2_table_id = "${element(module.peer_base_network.private_route_tables, 1)}"
+*}
+*```
+*
+* Full working references are available at [examples](examples)
+*
+*/
+
 locals {
   tags {
     ServiceProvider = "Rackspace"
