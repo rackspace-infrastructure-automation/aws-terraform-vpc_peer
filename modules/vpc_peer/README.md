@@ -1,6 +1,7 @@
-# aws-terraform-vpc_peer/modules/vpc_peer
+# aws-terraform-vpc\_peer/modules/vpc\_peer
 
-The module sets up a VPC peer within an AWS Account or in an alternate AWS Account.
+The module sets up a VPC peer in a single region and AWS Account. For inter region  
+and cross account VPC peering see the companion [cross account module ](../vpc\_peer\_cross\_account)
 
 ## Basic Usage
 
@@ -14,7 +15,7 @@ module "vpc_peer" {
  vpc_cidr_range                  = "172.18.0.0/16"
  peer_cidr_range                 = "10.0.0.0/16"
 
- #VPC Routes
+ #  VPC Routes
  vpc_route_1_enable   = true
  vpc_route_1_table_id = "${element(module.base_network.private_route_tables, 0)}"
  vpc_route_2_enable   = true
@@ -30,40 +31,44 @@ module "vpc_peer" {
 
 Full working references are available at [examples](examples)
 
+## Providers
+
+| Name | Version |
+|------|---------|
+| aws | n/a |
+
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|:----:|:-----:|:-----:|
-| allow\_remote\_vpc\_dns\_resolution | Allow a local VPC to resolve public DNS hostnames to private IP addresses when queried from instances in the peer VPC. | string | `"true"` | no |
-| auto\_accept | Accept the peering (both VPCs need to be in the same AWS account). (OPTIONAL). | string | `"false"` | no |
-| environment | Application environment for which this network is being created. one of: ('Development', 'Integration', 'PreProduction', 'Production', 'QA', 'Staging', 'Test') | string | `"Development"` | no |
-| peer\_cidr\_range | Peer VPC CIDR Range e.g. 172.19.0.0/16 | string | `"172.19.0.0/16"` | no |
-| peer\_owner\_id | The AWS account ID of the owner of the peer VPC. Defaults to the account ID the AWS provider is currently connected to. (OPTIONAL) | string | `""` | no |
-| peer\_region | The region of the accepter VPC of the [VPC Peering Connection]. auto_accept must be false, and use the aws_vpc_peering_connection_accepter to manage the accepter side. (OPTIONAL) | string | `""` | no |
-| peer\_route\_1\_enable | Enables Peer Route Table 1. Allowed values: true, false | string | `"false"` | no |
-| peer\_route\_1\_table\_id | ID of VPC Route table #1 rtb-XXXXXX | string | `""` | no |
-| peer\_route\_2\_enable | Enables Peer Route Table 2. Allowed values: true, false | string | `"false"` | no |
-| peer\_route\_2\_table\_id | ID of VPC Route table #2 rtb-XXXXXX | string | `""` | no |
-| peer\_route\_3\_enable | Enables Peer Route Table 3. Allowed values: true, false | string | `"false"` | no |
-| peer\_route\_3\_table\_id | ID of VPC Route table #3 rtb-XXXXXX | string | `""` | no |
-| peer\_route\_4\_enable | Enables Peer Route Table 4. Allowed values: true, false | string | `"false"` | no |
-| peer\_route\_4\_table\_id | ID of VPC Route table #4 rtb-XXXXXX | string | `""` | no |
-| peer\_route\_5\_enable | Enables Peer Route Table 5. Allowed values: true, false | string | `"false"` | no |
-| peer\_route\_5\_table\_id | ID of VPC Route table #5 rtb-XXXXXX | string | `""` | no |
-| peer\_vpc\_id | The ID of the VPC with which you are creating the VPC Peering Connection. | string | n/a | yes |
-| tags | Custom tags to apply to all resources. | map | `<map>` | no |
-| vpc\_cidr\_range | VPC CIDR Range e.g. 172.18.0.0/16 | string | `"172.18.0.0/16"` | no |
-| vpc\_id | The ID of the requester VPC. | string | n/a | yes |
-| vpc\_route\_1\_enable | Enables VPC Route Table 1. Allowed values: true, false | string | `"false"` | no |
-| vpc\_route\_1\_table\_id | ID of VPC Route table #1 rtb-XXXXXX | string | `""` | no |
-| vpc\_route\_2\_enable | Enables VPC Route Table 2. Allowed values: true, false | string | `"false"` | no |
-| vpc\_route\_2\_table\_id | ID of VPC Route table #2 rtb-XXXXXX | string | `""` | no |
-| vpc\_route\_3\_enable | Enables VPC Route Table 3. Allowed values: true, false | string | `"false"` | no |
-| vpc\_route\_3\_table\_id | ID of VPC Route table #3 rtb-XXXXXX | string | `""` | no |
-| vpc\_route\_4\_enable | Enables VPC Route Table 4. Allowed values: true, false | string | `"false"` | no |
-| vpc\_route\_4\_table\_id | ID of VPC Route table #4 rtb-XXXXXX | string | `""` | no |
-| vpc\_route\_5\_enable | Enables VPC Route Table 5. Allowed values: true, false | string | `"false"` | no |
-| vpc\_route\_5\_table\_id | ID of VPC Route table #5 rtb-XXXXXX | string | `""` | no |
+|------|-------------|------|---------|:-----:|
+| allow\_remote\_vpc\_dns\_resolution | Allow a local VPC to resolve public DNS hostnames to private IP addresses when queried from instances in the peer VPC. | `string` | `true` | no |
+| auto\_accept | Accept the peering. | `string` | `false` | no |
+| environment | Application environment for which this network is being created. one of: ('Development', 'Integration', 'PreProduction', 'Production', 'QA', 'Staging', 'Test') | `string` | `"Development"` | no |
+| peer\_cidr\_range | Peer VPC CIDR Range e.g. 172.19.0.0/16 | `string` | `"172.19.0.0/16"` | no |
+| peer\_route\_1\_enable | Enables Peer Route Table 1. Allowed values: true, false | `string` | `false` | no |
+| peer\_route\_1\_table\_id | ID of VPC Route table #1 rtb-XXXXXX | `string` | `""` | no |
+| peer\_route\_2\_enable | Enables Peer Route Table 2. Allowed values: true, false | `string` | `false` | no |
+| peer\_route\_2\_table\_id | ID of VPC Route table #2 rtb-XXXXXX | `string` | `""` | no |
+| peer\_route\_3\_enable | Enables Peer Route Table 3. Allowed values: true, false | `string` | `false` | no |
+| peer\_route\_3\_table\_id | ID of VPC Route table #3 rtb-XXXXXX | `string` | `""` | no |
+| peer\_route\_4\_enable | Enables Peer Route Table 4. Allowed values: true, false | `string` | `false` | no |
+| peer\_route\_4\_table\_id | ID of VPC Route table #4 rtb-XXXXXX | `string` | `""` | no |
+| peer\_route\_5\_enable | Enables Peer Route Table 5. Allowed values: true, false | `string` | `false` | no |
+| peer\_route\_5\_table\_id | ID of VPC Route table #5 rtb-XXXXXX | `string` | `""` | no |
+| peer\_vpc\_id | The ID of the VPC with which you are creating the VPC Peering Connection. | `string` | n/a | yes |
+| tags | Custom tags to apply to all resources. | `map` | `{}` | no |
+| vpc\_cidr\_range | VPC CIDR Range e.g. 172.18.0.0/16 | `string` | `"172.18.0.0/16"` | no |
+| vpc\_id | The ID of the requester VPC. | `string` | n/a | yes |
+| vpc\_route\_1\_enable | Enables VPC Route Table 1. Allowed values: true, false | `string` | `false` | no |
+| vpc\_route\_1\_table\_id | ID of VPC Route table #1 rtb-XXXXXX | `string` | `""` | no |
+| vpc\_route\_2\_enable | Enables VPC Route Table 2. Allowed values: true, false | `string` | `false` | no |
+| vpc\_route\_2\_table\_id | ID of VPC Route table #2 rtb-XXXXXX | `string` | `""` | no |
+| vpc\_route\_3\_enable | Enables VPC Route Table 3. Allowed values: true, false | `string` | `false` | no |
+| vpc\_route\_3\_table\_id | ID of VPC Route table #3 rtb-XXXXXX | `string` | `""` | no |
+| vpc\_route\_4\_enable | Enables VPC Route Table 4. Allowed values: true, false | `string` | `false` | no |
+| vpc\_route\_4\_table\_id | ID of VPC Route table #4 rtb-XXXXXX | `string` | `""` | no |
+| vpc\_route\_5\_enable | Enables VPC Route Table 5. Allowed values: true, false | `string` | `false` | no |
+| vpc\_route\_5\_table\_id | ID of VPC Route table #5 rtb-XXXXXX | `string` | `""` | no |
 
 ## Outputs
 

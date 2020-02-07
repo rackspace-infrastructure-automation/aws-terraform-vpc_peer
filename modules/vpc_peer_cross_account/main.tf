@@ -1,17 +1,42 @@
 /**
 * # aws-terraform-vpc_peer/modules/vpc_peer_cross_account
 *
-*This module requires AWS Credentials for the Acceptor account.
+* This module requires AWS Credentials for the Acceptor account in the cross account case. The IAM user must miminally have the below permissions to manage the entire lifecyle of the peering connection including route manipulation.
 *
-*To use the `cross_account.tf` or `inter_region.tf` examples, create a file called `secrets.tf` in the `example` folder, and populate it with the following, replacing the X's with the Acceptor's account credentials.
 *
-***NOTE:** To create an inter-region peering connection, specify the origin AWS account number as the value for the `peer_owner_id` parameter. You must also set the `is_inter_region` parameter to `true` in order to prevent the module from attempting to set unsupported peering connection options.
+* ```
+* {
+*    "Version": "2012-10-17",
+*    "Statement": [
+*        {
+*            "Sid": "demo",
+*            "Effect": "Allow",
+*            "Action": [
+*                "ec2:AcceptVpcPeeringConnection",
+*                "ec2:CreateRoute",
+*                "ec2:CreateTags",
+*                "ec2:DeleteRoute",
+*                "ec2:DescribeRouteTables",
+*                "ec2:DescribeTags",
+*                "ec2:DescribeVpcPeeringConnections",
+*                "ec2:ModifyVpcPeeringConnectionOptions",
+*                "ec2:RejectVpcPeeringConnection"
+*           ],
+*           "Resource": "*"
+*        }
+*    ]
+* }
+* ```
 *
-*## Basic Usage
+* **NOTE 1:** To use the `cross_account.tf` example create a file called `secrets.tf` similar to the `secrets.tf.example` file in the `examples` folder.
 *
-*```
-*module "cross_account_vpc_peer" {
-*  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_peer//modules/vpc_peer_cross_account?ref=v0.0.2"
+* **NOTE 2:** To create an inter-region peering connection, specify the origin AWS account number as the value for the `peer_owner_id` parameter.
+*
+* ## Basic Usage
+*
+* ```
+* module "cross_account_vpc_peer" {
+*  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_peer//modules/vpc_peer_cross_account?ref=v0.0.4"
 *  vpc_id = "${module.base_network.vpc_id}"
 *
 *  # VPC in acceptor account vpc-XXXXXXXXX
@@ -23,9 +48,11 @@
 *  # Acceptor VPC Region
 *  peer_region = "us-west-2"
 *
-*  # Acceptor Secret Key. Use a local secrets.tf file
-*  acceptor_access_key = "${var.acceptor_access_key}"
-*  acceptor_secret_key = "${var.acceptor_secret_key}"
+*  # Acceptor Access and Secret Key.
+*  # These are added inline for clarity but should never be commited directly to the terraform config as seen here.
+*  # Use a local secrets.tf as seen in example directory
+*  acceptor_access_key = "ACCESS_KEY_HERE"
+*  acceptor_secret_key = "SECRET_KEY_HERE"
 *
 *  vpc_cidr_range = "172.18.0.0/16"
 *
@@ -44,8 +71,8 @@
 *  peer_route_1_table_id = "rtb-XXXXX"
 *  peer_route_2_enable   = true
 *  peer_route_2_table_id = "rtb-XXXXX"
-*}
-*```
+* }
+* ```
 *
 * Full working references are available at [examples](examples)
 *
@@ -72,7 +99,6 @@ resource "aws_vpc_peering_connection" "vpc_peer" {
   vpc_id        = "${var.vpc_id}"
   peer_vpc_id   = "${var.peer_vpc_id}"
   peer_owner_id = "${var.peer_owner_id}"
-  auto_accept   = false
   peer_region   = "${var.peer_region}"
 
   tags {
@@ -95,7 +121,6 @@ resource "aws_vpc_peering_connection_accepter" "peer" {
 # create an explicit dependency on the accepter.
 
 resource "aws_vpc_peering_connection_options" "requester" {
-  count                     = "${var.is_inter_region ? 0 : 1}"
   vpc_peering_connection_id = "${aws_vpc_peering_connection_accepter.peer.id}"
 
   requester {
@@ -104,7 +129,6 @@ resource "aws_vpc_peering_connection_options" "requester" {
 }
 
 resource "aws_vpc_peering_connection_options" "accepter" {
-  count                     = "${var.is_inter_region ? 0 : 1}"
   provider                  = "aws.peer"
   vpc_peering_connection_id = "${aws_vpc_peering_connection_accepter.peer.id}"
 

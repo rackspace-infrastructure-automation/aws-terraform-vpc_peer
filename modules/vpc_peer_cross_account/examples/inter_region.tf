@@ -1,15 +1,18 @@
 provider "aws" {
-  version = "~> 1.2"
+  version = "~> 2.31"
   region  = "us-west-2"
 }
 
 provider "aws" {
-  region = "us-east-1"
-  alias  = "peer"
+  version = "~> 2.31"
+  region  = "us-east-1"
+  alias   = "peer"
 }
 
+data "aws_caller_identity" "current" {}
+
 module "base_network" {
-  source              = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_basenetwork?ref=v0.0.6"
+  source              = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_basenetwork?ref=v0.0.10"
   vpc_name            = "VPC-Peer-Origin"
   cidr_range          = "172.18.0.0/16"
   public_cidr_ranges  = ["172.18.168.0/22", "172.18.172.0/22"]
@@ -18,7 +21,7 @@ module "base_network" {
 }
 
 module "base_network_target" {
-  source              = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_basenetwork?ref=v0.0.6"
+  source              = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_basenetwork?ref=v0.0.10"
   vpc_name            = "VPC-Peer-Target"
   cidr_range          = "172.19.0.0/16"
   public_cidr_ranges  = ["172.19.168.0/22", "172.19.172.0/22"]
@@ -31,23 +34,18 @@ module "base_network_target" {
 }
 
 module "cross_account_vpc_peer" {
-  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_peer//modules/vpc_peer_cross_account?ref=v0.0.2"
-  vpc_id = "${module.base_network.vpc_id}"
+  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_peer//modules/vpc_peer_cross_account?ref=v0.0.4"
 
-  is_inter_region = true
+  vpc_id = "${module.base_network.vpc_id}"
 
   # VPC in acceptor account vpc-XXXXXXXXX
   peer_vpc_id = "${module.base_network_target.vpc_id}"
 
   # Acceptor account number
-  peer_owner_id = "XXXXXXXXXXXXX"
+  peer_owner_id = "${data.aws_caller_identity.current.account_id}"
 
   # Acceptor VPC Region
   peer_region = "us-east-1"
-
-  # Acceptor Secret Key. Use a local secrets.tf file
-  acceptor_access_key = "${var.acceptor_access_key}"
-  acceptor_secret_key = "${var.acceptor_secret_key}"
 
   vpc_cidr_range = "172.18.0.0/16"
 
