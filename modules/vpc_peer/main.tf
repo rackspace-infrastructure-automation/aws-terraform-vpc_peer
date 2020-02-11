@@ -1,12 +1,13 @@
 /**
 * # aws-terraform-vpc_peer/modules/vpc_peer
 *
-*The module sets up a VPC peer within an AWS Account or in an alternate AWS Account.
+* The module sets up a VPC peer in a single region and AWS Account. For inter region
+* and cross account VPC peering see the companion [cross account module ](../vpc_peer_cross_account)
 *
-*## Basic Usage
+* ## Basic Usage
 *
-*```
-*module "vpc_peer" {
+* ```
+* module "vpc_peer" {
 *  source                          = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_peer//modules/vpc_peer?ref=v0.0.2"
 *  vpc_id                          = "${module.base_network.vpc_id}"
 *  peer_vpc_id                     = "${module.peer_base_network.vpc_id}"
@@ -15,7 +16,7 @@
 *  vpc_cidr_range                  = "172.18.0.0/16"
 *  peer_cidr_range                 = "10.0.0.0/16"
 *
-*  #VPC Routes
+*  #  VPC Routes
 *  vpc_route_1_enable   = true
 *  vpc_route_1_table_id = "${element(module.base_network.private_route_tables, 0)}"
 *  vpc_route_2_enable   = true
@@ -26,8 +27,8 @@
 *  peer_route_1_table_id = "${element(module.peer_base_network.private_route_tables, 0)}"
 *  peer_route_2_enable   = true
 *  peer_route_2_table_id = "${element(module.peer_base_network.private_route_tables, 1)}"
-*}
-*```
+* }
+* ```
 *
 * Full working references are available at [examples](examples)
 *
@@ -41,11 +42,9 @@ locals {
 }
 
 resource "aws_vpc_peering_connection" "vpc_peer" {
-  peer_owner_id = "${var.peer_owner_id}"
-  peer_vpc_id   = "${var.peer_vpc_id}"
-  vpc_id        = "${var.vpc_id}"
-  auto_accept   = "${var.auto_accept}"
-  peer_region   = "${var.peer_region}"
+  peer_vpc_id = "${var.peer_vpc_id}"
+  vpc_id      = "${var.vpc_id}"
+  auto_accept = "${var.auto_accept}"
 
   accepter {
     allow_remote_vpc_dns_resolution = "${var.allow_remote_vpc_dns_resolution}"

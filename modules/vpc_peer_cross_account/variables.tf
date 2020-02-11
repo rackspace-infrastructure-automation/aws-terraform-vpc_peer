@@ -26,14 +26,8 @@ variable "vpc_id" {
   type        = "string"
 }
 
-variable "auto_accept" {
-  description = "Accept the peering (both VPCs need to be in the same AWS account). (OPTIONAL)."
-  type        = "string"
-  default     = false
-}
-
 variable "peer_region" {
-  description = "The region of the accepter VPC of the [VPC Peering Connection]. auto_accept must be false, and use the aws_vpc_peering_connection_accepter to manage the accepter side. (OPTIONAL)"
+  description = "The region of the accepter VPC of the [VPC Peering Connection]."
   type        = "string"
   default     = ""
 }
@@ -45,19 +39,15 @@ variable "allow_remote_vpc_dns_resolution" {
 }
 
 variable "acceptor_access_key" {
-  description = "An AWS Access Key with permissions to setup a VPC on the alternate account."
+  description = "An AWS Access Key with permissions to setup a VPC on the alternate account. Only set for cross account use cases."
   type        = "string"
+  default     = ""
 }
 
 variable "acceptor_secret_key" {
-  description = "An AWS Secret Key with permissions to setup a VPC on the alternate account."
+  description = "An AWS Secret Key with permissions to setup a VPC on the alternate account. Only set for cross account use cases."
   type        = "string"
-}
-
-variable "is_inter_region" {
-  description = "Whether or not the VPC Peering connection being established is inter-region."
-  type        = "string"
-  default     = false
+  default     = ""
 }
 
 #########################
