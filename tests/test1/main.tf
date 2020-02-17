@@ -59,21 +59,56 @@ data "aws_caller_identity" "current" {
 module "cross_account_vpc_peer" {
   source = "../../module/modules/vpc_peer_cross_account"
 
-  acceptor_access_key   = ""
-  acceptor_secret_key   = ""
-  peer_cidr_range       = "192.168.0.0/16"
-  peer_owner_id         = data.aws_caller_identity.current.account_id
-  peer_region           = "us-east-2"
   peer_route_1_enable   = true
   peer_route_1_table_id = element(module.remote_peer_base_network.private_route_tables, 0)
   peer_route_2_enable   = true
   peer_route_2_table_id = element(module.remote_peer_base_network.private_route_tables, 1)
   peer_vpc_id           = module.remote_peer_base_network.vpc_id
-  vpc_cidr_range        = "172.18.0.0/16"
   vpc_id                = module.base_network.vpc_id
   vpc_route_1_enable    = true
   vpc_route_1_table_id  = element(module.base_network.private_route_tables, 0)
   vpc_route_2_enable    = true
   vpc_route_2_table_id  = element(module.base_network.private_route_tables, 1)
+
+  providers = {
+    aws.peer = aws.ohio
+  }
 }
 
+resource "random_string" "external_id" {
+  length      = 16
+  special     = false
+  min_upper   = 1
+  min_lower   = 1
+  min_numeric = 1
+}
+
+data "aws_iam_policy_document" "accept_vpc_peer" {
+  statement {
+    effect    = "Allow"
+    resources = ["*"]
+
+    actions = [
+      "ec2:AcceptVpcPeeringConnection",
+      "ec2:CreateRoute",
+      "ec2:CreateTags",
+      "ec2:DeleteRoute",
+      "ec2:Describe*",
+      "ec2:ModifyVpcPeeringConnectionOptions",
+      "ec2:RejectVpcPeeringConnection",
+    ]
+  }
+}
+
+data "aws_canonical_user_id" "current" {}
+
+module "accept_vpc_peer" {
+  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-iam_resources//modules/role?ref=master"
+
+  name        = "AcceptVpcPeer"
+  aws_account = [data.aws_caller_identity.current.account_id]
+  external_id = random_string.external_id.result
+
+  inline_policy       = [data.aws_iam_policy_document.accept_vpc_peer.json]
+  inline_policy_count = 1
+}

@@ -14,8 +14,6 @@
 *  peer_vpc_id                     = module.peer_base_network.vpc_id
 *  auto_accept                     = true
 *  allow_remote_vpc_dns_resolution = true
-*  vpc_cidr_range                  = "172.18.0.0/16"
-*  peer_cidr_range                 = "10.0.0.0/16"
 *
 *  #  VPC Routes
 *  vpc_route_1_enable   = true
@@ -33,6 +31,17 @@
 *
 * Full working references are available at [examples](examples)
 *
+* ## Terraform 0.12 upgrade
+*
+* Several changes were required while adding terraform 0.12 compatibility.  The following changes should be
+* made when upgrading from a previous release to version 0.12.0 or higher.
+*
+* ### Module variables
+*
+* The following module variables were removed and are no longer neccessary:
+*
+* - `peer_cidr_range`
+* - `vpc_cidr_range`
 */
 
 terraform {
@@ -48,6 +57,14 @@ locals {
     Environment     = var.environment
     ServiceProvider = "Rackspace"
   }
+}
+
+data "aws_vpc" "vpc" {
+  id = var.vpc_id
+}
+
+data "aws_vpc" "peer" {
+  id = var.peer_vpc_id
 }
 
 resource "aws_vpc_peering_connection" "vpc_peer" {
@@ -69,7 +86,7 @@ resource "aws_vpc_peering_connection" "vpc_peer" {
 resource "aws_route" "vpc_route_1" {
   count = var.vpc_route_1_enable ? 1 : 0
 
-  destination_cidr_block    = var.peer_cidr_range
+  destination_cidr_block    = data.aws_vpc.peer.cidr_block
   route_table_id            = var.vpc_route_1_table_id
   vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peer.id
 }
@@ -77,7 +94,7 @@ resource "aws_route" "vpc_route_1" {
 resource "aws_route" "vpc_route_2" {
   count = var.vpc_route_2_enable ? 1 : 0
 
-  destination_cidr_block    = var.peer_cidr_range
+  destination_cidr_block    = data.aws_vpc.peer.cidr_block
   route_table_id            = var.vpc_route_2_table_id
   vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peer.id
 }
@@ -85,7 +102,7 @@ resource "aws_route" "vpc_route_2" {
 resource "aws_route" "vpc_route_3" {
   count = var.vpc_route_3_enable ? 1 : 0
 
-  destination_cidr_block    = var.peer_cidr_range
+  destination_cidr_block    = data.aws_vpc.peer.cidr_block
   route_table_id            = var.vpc_route_3_table_id
   vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peer.id
 }
@@ -93,7 +110,7 @@ resource "aws_route" "vpc_route_3" {
 resource "aws_route" "vpc_route_4" {
   count = var.vpc_route_4_enable ? 1 : 0
 
-  destination_cidr_block    = var.peer_cidr_range
+  destination_cidr_block    = data.aws_vpc.peer.cidr_block
   route_table_id            = var.vpc_route_4_table_id
   vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peer.id
 }
@@ -101,7 +118,7 @@ resource "aws_route" "vpc_route_4" {
 resource "aws_route" "vpc_route_5" {
   count = var.vpc_route_5_enable ? 1 : 0
 
-  destination_cidr_block    = var.peer_cidr_range
+  destination_cidr_block    = data.aws_vpc.peer.cidr_block
   route_table_id            = var.vpc_route_5_table_id
   vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peer.id
 }
@@ -110,7 +127,7 @@ resource "aws_route" "vpc_route_5" {
 resource "aws_route" "peer_route_1" {
   count = var.peer_route_1_enable ? 1 : 0
 
-  destination_cidr_block    = var.vpc_cidr_range
+  destination_cidr_block    = data.aws_vpc.vpc.cidr_block
   route_table_id            = var.peer_route_1_table_id
   vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peer.id
 }
@@ -118,7 +135,7 @@ resource "aws_route" "peer_route_1" {
 resource "aws_route" "peer_route_2" {
   count = var.peer_route_2_enable ? 1 : 0
 
-  destination_cidr_block    = var.vpc_cidr_range
+  destination_cidr_block    = data.aws_vpc.vpc.cidr_block
   route_table_id            = var.peer_route_2_table_id
   vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peer.id
 }
@@ -126,7 +143,7 @@ resource "aws_route" "peer_route_2" {
 resource "aws_route" "peer_route_3" {
   count = var.peer_route_3_enable ? 1 : 0
 
-  destination_cidr_block    = var.vpc_cidr_range
+  destination_cidr_block    = data.aws_vpc.vpc.cidr_block
   route_table_id            = var.peer_route_3_table_id
   vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peer.id
 }
@@ -134,7 +151,7 @@ resource "aws_route" "peer_route_3" {
 resource "aws_route" "peer_route_4" {
   count = var.peer_route_4_enable ? 1 : 0
 
-  destination_cidr_block    = var.vpc_cidr_range
+  destination_cidr_block    = data.aws_vpc.vpc.cidr_block
   route_table_id            = var.peer_route_4_table_id
   vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peer.id
 }
@@ -142,7 +159,7 @@ resource "aws_route" "peer_route_4" {
 resource "aws_route" "peer_route_5" {
   count = var.peer_route_5_enable ? 1 : 0
 
-  destination_cidr_block    = var.vpc_cidr_range
+  destination_cidr_block    = data.aws_vpc.vpc.cidr_block
   route_table_id            = var.peer_route_5_table_id
   vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peer.id
 }

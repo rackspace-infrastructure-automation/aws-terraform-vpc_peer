@@ -16,12 +16,6 @@ variable "environment" {
   default     = "Development"
 }
 
-variable "peer_cidr_range" {
-  description = "Peer VPC CIDR Range e.g. 172.19.0.0/16"
-  type        = string
-  default     = "172.19.0.0/16"
-}
-
 variable "peer_route_1_enable" {
   description = "Enables Peer Route Table 1. Allowed values: true, false"
   type        = bool
@@ -91,12 +85,6 @@ variable "tags" {
   description = "Custom tags to apply to all resources."
   type        = map(string)
   default     = {}
-}
-
-variable "vpc_cidr_range" {
-  description = "VPC CIDR Range e.g. 172.18.0.0/16"
-  type        = string
-  default     = "172.18.0.0/16"
 }
 
 variable "vpc_id" {

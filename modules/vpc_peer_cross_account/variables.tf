@@ -1,14 +1,3 @@
-variable "acceptor_access_key" {
-  description = "An AWS Access Key with permissions to setup a VPC on the alternate account. Only set for cross account use cases."
-  type        = string
-  default     = ""
-}
-
-variable "acceptor_secret_key" {
-  description = "An AWS Secret Key with permissions to setup a VPC on the alternate account. Only set for cross account use cases."
-  type        = string
-  default     = ""
-}
 variable "allow_remote_vpc_dns_resolution" {
   description = "Allow a local VPC to resolve public DNS hostnames to private IP addresses when queried from instances in the peer VPC."
   type        = bool
@@ -19,24 +8,6 @@ variable "environment" {
   description = "Application environment for which this network is being created. one of: ('Development', 'Integration', 'PreProduction', 'Production', 'QA', 'Staging', 'Test')"
   type        = string
   default     = "Development"
-}
-
-variable "peer_cidr_range" {
-  description = "Peer VPC CIDR Range e.g. 172.19.0.0/16"
-  type        = string
-  default     = "172.19.0.0/16"
-}
-
-variable "peer_owner_id" {
-  description = "The AWS account ID of the owner of the peer VPC. Defaults to the account ID the AWS provider is currently connected to. (OPTIONAL)"
-  type        = string
-  default     = ""
-}
-
-variable "peer_region" {
-  description = "The region of the accepter VPC of the [VPC Peering Connection]."
-  type        = string
-  default     = ""
 }
 
 variable "peer_route_1_enable" {
@@ -108,12 +79,6 @@ variable "tags" {
   description = "Custom tags to apply to all resources."
   type        = map(string)
   default     = {}
-}
-
-variable "vpc_cidr_range" {
-  description = "VPC CIDR Range e.g. 172.18.0.0/16"
-  type        = string
-  default     = "172.18.0.0/16"
 }
 
 variable "vpc_id" {
