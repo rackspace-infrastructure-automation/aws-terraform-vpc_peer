@@ -42,33 +42,33 @@ Full working references are available at [examples](examples)
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:-----:|
-| allow\_remote\_vpc\_dns\_resolution | Allow a local VPC to resolve public DNS hostnames to private IP addresses when queried from instances in the peer VPC. | `string` | `true` | no |
-| auto\_accept | Accept the peering. | `string` | `false` | no |
+| allow\_remote\_vpc\_dns\_resolution | Allow a local VPC to resolve public DNS hostnames to private IP addresses when queried from instances in the peer VPC. | `bool` | `true` | no |
+| auto\_accept | Accept the peering. | `bool` | `false` | no |
 | environment | Application environment for which this network is being created. one of: ('Development', 'Integration', 'PreProduction', 'Production', 'QA', 'Staging', 'Test') | `string` | `"Development"` | no |
 | peer\_cidr\_range | Peer VPC CIDR Range e.g. 172.19.0.0/16 | `string` | `"172.19.0.0/16"` | no |
-| peer\_route\_1\_enable | Enables Peer Route Table 1. Allowed values: true, false | `string` | `false` | no |
+| peer\_route\_1\_enable | Enables Peer Route Table 1. Allowed values: true, false | `bool` | `false` | no |
 | peer\_route\_1\_table\_id | ID of VPC Route table #1 rtb-XXXXXX | `string` | `""` | no |
-| peer\_route\_2\_enable | Enables Peer Route Table 2. Allowed values: true, false | `string` | `false` | no |
+| peer\_route\_2\_enable | Enables Peer Route Table 2. Allowed values: true, false | `bool` | `false` | no |
 | peer\_route\_2\_table\_id | ID of VPC Route table #2 rtb-XXXXXX | `string` | `""` | no |
-| peer\_route\_3\_enable | Enables Peer Route Table 3. Allowed values: true, false | `string` | `false` | no |
+| peer\_route\_3\_enable | Enables Peer Route Table 3. Allowed values: true, false | `bool` | `false` | no |
 | peer\_route\_3\_table\_id | ID of VPC Route table #3 rtb-XXXXXX | `string` | `""` | no |
-| peer\_route\_4\_enable | Enables Peer Route Table 4. Allowed values: true, false | `string` | `false` | no |
+| peer\_route\_4\_enable | Enables Peer Route Table 4. Allowed values: true, false | `bool` | `false` | no |
 | peer\_route\_4\_table\_id | ID of VPC Route table #4 rtb-XXXXXX | `string` | `""` | no |
-| peer\_route\_5\_enable | Enables Peer Route Table 5. Allowed values: true, false | `string` | `false` | no |
+| peer\_route\_5\_enable | Enables Peer Route Table 5. Allowed values: true, false | `bool` | `false` | no |
 | peer\_route\_5\_table\_id | ID of VPC Route table #5 rtb-XXXXXX | `string` | `""` | no |
 | peer\_vpc\_id | The ID of the VPC with which you are creating the VPC Peering Connection. | `string` | n/a | yes |
 | tags | Custom tags to apply to all resources. | `map(string)` | `{}` | no |
 | vpc\_cidr\_range | VPC CIDR Range e.g. 172.18.0.0/16 | `string` | `"172.18.0.0/16"` | no |
 | vpc\_id | The ID of the requester VPC. | `string` | n/a | yes |
-| vpc\_route\_1\_enable | Enables VPC Route Table 1. Allowed values: true, false | `string` | `false` | no |
+| vpc\_route\_1\_enable | Enables VPC Route Table 1. Allowed values: true, false | `bool` | `false` | no |
 | vpc\_route\_1\_table\_id | ID of VPC Route table #1 rtb-XXXXXX | `string` | `""` | no |
-| vpc\_route\_2\_enable | Enables VPC Route Table 2. Allowed values: true, false | `string` | `false` | no |
+| vpc\_route\_2\_enable | Enables VPC Route Table 2. Allowed values: true, false | `bool` | `false` | no |
 | vpc\_route\_2\_table\_id | ID of VPC Route table #2 rtb-XXXXXX | `string` | `""` | no |
-| vpc\_route\_3\_enable | Enables VPC Route Table 3. Allowed values: true, false | `string` | `false` | no |
+| vpc\_route\_3\_enable | Enables VPC Route Table 3. Allowed values: true, false | `bool` | `false` | no |
 | vpc\_route\_3\_table\_id | ID of VPC Route table #3 rtb-XXXXXX | `string` | `""` | no |
-| vpc\_route\_4\_enable | Enables VPC Route Table 4. Allowed values: true, false | `string` | `false` | no |
+| vpc\_route\_4\_enable | Enables VPC Route Table 4. Allowed values: true, false | `bool` | `false` | no |
 | vpc\_route\_4\_table\_id | ID of VPC Route table #4 rtb-XXXXXX | `string` | `""` | no |
-| vpc\_route\_5\_enable | Enables VPC Route Table 5. Allowed values: true, false | `string` | `false` | no |
+| vpc\_route\_5\_enable | Enables VPC Route Table 5. Allowed values: true, false | `bool` | `false` | no |
 | vpc\_route\_5\_table\_id | ID of VPC Route table #5 rtb-XXXXXX | `string` | `""` | no |
 
 ## Outputs
