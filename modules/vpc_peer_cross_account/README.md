@@ -34,8 +34,9 @@ This module requires AWS Credentials for the Acceptor account in the cross accou
 
 ```
 module "cross_account_vpc_peer" {
- source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_peer//modules/vpc_peer_cross_account?ref=v0.0.4"
- vpc_id = "${module.base_network.vpc_id}"
+ source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_peer//modules/vpc_peer_cross_account?ref=v0.12.0"
+
+ vpc_id = module.base_network.vpc_id
 
  # VPC in acceptor account vpc-XXXXXXXXX
  peer_vpc_id = "vpc-XXXXXXXXX"
@@ -58,9 +59,9 @@ module "cross_account_vpc_peer" {
  peer_cidr_range = "X.X.X.X/16"
 
  vpc_route_1_enable   = true
- vpc_route_1_table_id = "${element(module.base_network.private_route_tables, 0)}"
+ vpc_route_1_table_id = element(module.base_network.private_route_tables, 0)
  vpc_route_2_enable   = true
- vpc_route_2_table_id = "${element(module.base_network.private_route_tables, 1)}"
+ vpc_route_2_table_id = element(module.base_network.private_route_tables, 1)
 
  # Acceptor Route Tables
  # Acceptor Route Table ID rtb-XXXXXXX
@@ -78,8 +79,8 @@ Full working references are available at [examples](examples)
 
 | Name | Version |
 |------|---------|
-| aws | n/a |
-| aws.peer | n/a |
+| aws | >= 2.31.0 |
+| aws.peer | >= 2.31.0 |
 
 ## Inputs
 
@@ -103,7 +104,7 @@ Full working references are available at [examples](examples)
 | peer\_route\_5\_enable | Enables Peer Route Table 5. Allowed values: true, false | `string` | `false` | no |
 | peer\_route\_5\_table\_id | ID of VPC Route table #5 rtb-XXXXXX | `string` | `""` | no |
 | peer\_vpc\_id | The ID of the VPC with which you are creating the VPC Peering Connection. | `string` | n/a | yes |
-| tags | Custom tags to apply to all resources. | `map` | `{}` | no |
+| tags | Custom tags to apply to all resources. | `map(string)` | `{}` | no |
 | vpc\_cidr\_range | VPC CIDR Range e.g. 172.18.0.0/16 | `string` | `"172.18.0.0/16"` | no |
 | vpc\_id | The ID of the requester VPC. | `string` | n/a | yes |
 | vpc\_route\_1\_enable | Enables VPC Route Table 1. Allowed values: true, false | `string` | `false` | no |
