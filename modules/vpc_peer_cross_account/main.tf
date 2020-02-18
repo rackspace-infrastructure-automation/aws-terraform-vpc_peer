@@ -1,8 +1,10 @@
 /**
 * # aws-terraform-vpc_peer/modules/vpc_peer_cross_account
 *
-* This module requires AWS Credentials for the Acceptor account in the cross account case. The IAM user must miminally have the below permissions to manage the entire lifecyle of the peering connection including route manipulation.
-*
+* This module requires AWS Credentials for the peer account in the cross account case. The IAM user
+* or IAM role must miminally have the below permissions to manage the entire lifecyle of the peering
+* connection including route manipulation.  An example of the required [IAM Role](examples/cross_account_iam_setup.tf)
+* can be used to create the required role.
 *
 * ```
 * {
@@ -16,9 +18,7 @@
 *                "ec2:CreateRoute",
 *                "ec2:CreateTags",
 *                "ec2:DeleteRoute",
-*                "ec2:DescribeRouteTables",
-*                "ec2:DescribeTags",
-*                "ec2:DescribeVpcPeeringConnections",
+*                "ec2:Describe*",
 *                "ec2:ModifyVpcPeeringConnectionOptions",
 *                "ec2:RejectVpcPeeringConnection"
 *           ],
@@ -28,91 +28,143 @@
 * }
 * ```
 *
-* **NOTE 1:** To use the `cross_account.tf` example create a file called `secrets.tf` similar to the `secrets.tf.example` file in the `examples` folder.
-*
-* **NOTE 2:** To create an inter-region peering connection, specify the origin AWS account number as the value for the `peer_owner_id` parameter.
-*
 * ## Basic Usage
 *
-* ```
+* ```HCL
 * module "cross_account_vpc_peer" {
-*  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_peer//modules/vpc_peer_cross_account?ref=v0.0.4"
-*  vpc_id = "${module.base_network.vpc_id}"
+*   source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_peer//modules/vpc_peer_cross_account?ref=v0.12.0"
 *
-*  # VPC in acceptor account vpc-XXXXXXXXX
-*  peer_vpc_id = "vpc-XXXXXXXXX"
+*   vpc_id = module.base_network.vpc_id
 *
-*  # Acceptor account number
-*  peer_owner_id = "XXXXXXXXXXXXX"
+*   # VPC in acceptor account vpc-XXXXXXXXX
+*   peer_vpc_id = "vpc-XXXXXXXXX"
 *
-*  # Acceptor VPC Region
-*  peer_region = "us-west-2"
+*   vpc_route_1_enable   = true
+*   vpc_route_1_table_id = element(module.base_network.private_route_tables, 0)
+*   vpc_route_2_enable   = true
+*   vpc_route_2_table_id = element(module.base_network.private_route_tables, 1)
 *
-*  # Acceptor Access and Secret Key.
-*  # These are added inline for clarity but should never be commited directly to the terraform config as seen here.
-*  # Use a local secrets.tf as seen in example directory
-*  acceptor_access_key = "ACCESS_KEY_HERE"
-*  acceptor_secret_key = "SECRET_KEY_HERE"
+*   # Acceptor Route Tables
+*   # Acceptor Route Table ID rtb-XXXXXXX
+*   peer_route_1_enable = true
 *
-*  vpc_cidr_range = "172.18.0.0/16"
+*   peer_route_1_table_id = "rtb-XXXXX"
+*   peer_route_2_enable   = true
+*   peer_route_2_table_id = "rtb-XXXXX"
 *
-*  # Acceptor cidr Range e.g. 172.19.0.0/16
-*  peer_cidr_range = "X.X.X.X/16"
+*   providers = {
+*     aws.peer = aws.peer
+*   }
+* }
+* ```
 *
-*  vpc_route_1_enable   = true
-*  vpc_route_1_table_id = "${element(module.base_network.private_route_tables, 0)}"
-*  vpc_route_2_enable   = true
-*  vpc_route_2_table_id = "${element(module.base_network.private_route_tables, 1)}"
+* ### Cross account provider example
 *
-*  # Acceptor Route Tables
-*  # Acceptor Route Table ID rtb-XXXXXXX
-*  peer_route_1_enable = true
+* ```HCL
+* provider "aws" {
+*   version = "~> 2.31"
 *
-*  peer_route_1_table_id = "rtb-XXXXX"
-*  peer_route_2_enable   = true
-*  peer_route_2_table_id = "rtb-XXXXX"
+*   alias  = "peer"
+*   region = "us-west-2"
+*
+*   assume_role {
+*     role_arn    = "arn:aws:iam::123456789012:role/AcceptVpcPeer"
+*     external_id = "SomeExternalId"
+*   }
+* }
+* ```
+*
+* ### Cross region provider example
+*
+* ```HCL
+* provider "aws" {
+*   alias  = "peer"
+*   region = "us-east-1"
 * }
 * ```
 *
 * Full working references are available at [examples](examples)
 *
+* ## Terraform 0.12 upgrade
+*
+* Several changes were required while adding terraform 0.12 compatibility.  The following changes should be
+* made when upgrading from a previous release to version 0.12.0 or higher.
+*
+* ### Required provider
+*
+* The module now requires an explicitly defined AWS provider to be provided for the peer region and\or account.
+* The examples have been updated to demonstrate passing in the provider.  As long as the peer information is
+* not changed, no resources should be replaced as a result of this change.
+*
+* ### Module variables
+*
+* The following module variables were removed and are no longer neccessary:
+*
+* - `acceptor_access_key`
+* - `acceptor_secret_key`
+* - `peer_cidr_range`
+* - `peer_owner_id`
+* - `peer_region`
+* - `vpc_cidr_range`
 */
 
+terraform {
+  required_version = ">= 0.12"
+
+  required_providers {
+    aws = ">= 2.31.0"
+  }
+}
+
 locals {
-  tags {
+  tags = {
+    Environment     = var.environment
     ServiceProvider = "Rackspace"
-    Environment     = "${var.environment}"
   }
 }
 
 provider "aws" {
-  alias  = "peer"
-  region = "${var.peer_region}"
+  alias = "peer"
+}
 
-  # Accepter's credentials.
-  access_key = "${var.acceptor_access_key}"
-  secret_key = "${var.acceptor_secret_key}"
+data "aws_region" "peer" {
+  provider = aws.peer
+}
+
+data "aws_caller_identity" "peer" {
+  provider = aws.peer
+}
+
+data "aws_vpc" "vpc" {
+  id = var.vpc_id
+}
+
+data "aws_vpc" "peer" {
+  provider = aws.peer
+
+  id = var.peer_vpc_id
 }
 
 # Requester's side of the connection.
 resource "aws_vpc_peering_connection" "vpc_peer" {
-  vpc_id        = "${var.vpc_id}"
-  peer_vpc_id   = "${var.peer_vpc_id}"
-  peer_owner_id = "${var.peer_owner_id}"
-  peer_region   = "${var.peer_region}"
+  peer_owner_id = data.aws_caller_identity.peer.account_id
+  peer_region   = data.aws_region.peer.name
+  peer_vpc_id   = var.peer_vpc_id
+  vpc_id        = var.vpc_id
 
-  tags {
+  tags = {
     Side = "Requester"
   }
 }
 
 # Accepter's side of the connection.
 resource "aws_vpc_peering_connection_accepter" "peer" {
-  provider                  = "aws.peer"
-  vpc_peering_connection_id = "${aws_vpc_peering_connection.vpc_peer.id}"
-  auto_accept               = true
+  provider = aws.peer
 
-  tags {
+  auto_accept               = true
+  vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peer.id
+
+  tags = {
     Side = "Accepter"
   }
 }
@@ -121,7 +173,7 @@ resource "aws_vpc_peering_connection_accepter" "peer" {
 # create an explicit dependency on the accepter.
 
 resource "aws_vpc_peering_connection_options" "requester" {
-  vpc_peering_connection_id = "${aws_vpc_peering_connection_accepter.peer.id}"
+  vpc_peering_connection_id = aws_vpc_peering_connection_accepter.peer.id
 
   requester {
     allow_remote_vpc_dns_resolution = true
@@ -129,8 +181,9 @@ resource "aws_vpc_peering_connection_options" "requester" {
 }
 
 resource "aws_vpc_peering_connection_options" "accepter" {
-  provider                  = "aws.peer"
-  vpc_peering_connection_id = "${aws_vpc_peering_connection_accepter.peer.id}"
+  provider = aws.peer
+
+  vpc_peering_connection_id = aws_vpc_peering_connection_accepter.peer.id
 
   accepter {
     allow_remote_vpc_dns_resolution = true
@@ -139,77 +192,93 @@ resource "aws_vpc_peering_connection_options" "accepter" {
 
 # VPC Route Tables
 resource "aws_route" "vpc_route_1" {
-  count                     = "${var.vpc_route_1_enable ? 1 : 0}"
-  route_table_id            = "${var.vpc_route_1_table_id}"
-  destination_cidr_block    = "${var.peer_cidr_range}"
-  vpc_peering_connection_id = "${aws_vpc_peering_connection.vpc_peer.id}"
+  count = var.vpc_route_1_enable ? 1 : 0
+
+  destination_cidr_block    = data.aws_vpc.peer.cidr_block
+  route_table_id            = var.vpc_route_1_table_id
+  vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peer.id
 }
 
 resource "aws_route" "vpc_route_2" {
-  count                     = "${var.vpc_route_2_enable ? 1 : 0}"
-  route_table_id            = "${var.vpc_route_2_table_id}"
-  destination_cidr_block    = "${var.peer_cidr_range}"
-  vpc_peering_connection_id = "${aws_vpc_peering_connection.vpc_peer.id}"
+  count = var.vpc_route_2_enable ? 1 : 0
+
+  destination_cidr_block    = data.aws_vpc.peer.cidr_block
+  route_table_id            = var.vpc_route_2_table_id
+  vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peer.id
 }
 
 resource "aws_route" "vpc_route_3" {
-  count                     = "${var.vpc_route_3_enable ? 1 : 0}"
-  route_table_id            = "${var.vpc_route_3_table_id}"
-  destination_cidr_block    = "${var.peer_cidr_range}"
-  vpc_peering_connection_id = "${aws_vpc_peering_connection.vpc_peer.id}"
+  count = var.vpc_route_3_enable ? 1 : 0
+
+  destination_cidr_block    = data.aws_vpc.peer.cidr_block
+  route_table_id            = var.vpc_route_3_table_id
+  vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peer.id
 }
 
 resource "aws_route" "vpc_route_4" {
-  count                     = "${var.vpc_route_4_enable ? 1 : 0}"
-  route_table_id            = "${var.vpc_route_4_table_id}"
-  destination_cidr_block    = "${var.peer_cidr_range}"
-  vpc_peering_connection_id = "${aws_vpc_peering_connection.vpc_peer.id}"
+  count = var.vpc_route_4_enable ? 1 : 0
+
+  destination_cidr_block    = data.aws_vpc.peer.cidr_block
+  route_table_id            = var.vpc_route_4_table_id
+  vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peer.id
 }
 
 resource "aws_route" "vpc_route_5" {
-  count                     = "${var.vpc_route_5_enable ? 1 : 0}"
-  route_table_id            = "${var.vpc_route_5_table_id}"
-  destination_cidr_block    = "${var.peer_cidr_range}"
-  vpc_peering_connection_id = "${aws_vpc_peering_connection.vpc_peer.id}"
+  count = var.vpc_route_5_enable ? 1 : 0
+
+  destination_cidr_block    = data.aws_vpc.peer.cidr_block
+  route_table_id            = var.vpc_route_5_table_id
+  vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peer.id
 }
 
 # Peer VPC Route Tables
 resource "aws_route" "peer_route_1" {
-  provider                  = "aws.peer"
-  count                     = "${var.peer_route_1_enable ? 1 : 0}"
-  route_table_id            = "${var.peer_route_1_table_id}"
-  destination_cidr_block    = "${var.vpc_cidr_range}"
-  vpc_peering_connection_id = "${aws_vpc_peering_connection.vpc_peer.id}"
+  count = var.peer_route_1_enable ? 1 : 0
+
+  provider = aws.peer
+
+  destination_cidr_block    = data.aws_vpc.vpc.cidr_block
+  route_table_id            = var.peer_route_1_table_id
+  vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peer.id
 }
 
 resource "aws_route" "peer_route_2" {
-  provider                  = "aws.peer"
-  count                     = "${var.peer_route_2_enable ? 1 : 0}"
-  route_table_id            = "${var.peer_route_2_table_id}"
-  destination_cidr_block    = "${var.vpc_cidr_range}"
-  vpc_peering_connection_id = "${aws_vpc_peering_connection.vpc_peer.id}"
+  count = var.peer_route_2_enable ? 1 : 0
+
+  provider = aws.peer
+
+  destination_cidr_block    = data.aws_vpc.vpc.cidr_block
+  route_table_id            = var.peer_route_2_table_id
+  vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peer.id
 }
 
 resource "aws_route" "peer_route_3" {
-  provider                  = "aws.peer"
-  count                     = "${var.peer_route_3_enable ? 1 : 0}"
-  route_table_id            = "${var.peer_route_3_table_id}"
-  destination_cidr_block    = "${var.vpc_cidr_range}"
-  vpc_peering_connection_id = "${aws_vpc_peering_connection.vpc_peer.id}"
+  count = var.peer_route_3_enable ? 1 : 0
+
+  provider = aws.peer
+
+  destination_cidr_block    = data.aws_vpc.vpc.cidr_block
+  route_table_id            = var.peer_route_3_table_id
+  vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peer.id
 }
 
 resource "aws_route" "peer_route_4" {
-  provider                  = "aws.peer"
-  count                     = "${var.peer_route_4_enable ? 1 : 0}"
-  route_table_id            = "${var.peer_route_4_table_id}"
-  destination_cidr_block    = "${var.vpc_cidr_range}"
-  vpc_peering_connection_id = "${aws_vpc_peering_connection.vpc_peer.id}"
+  count = var.peer_route_4_enable ? 1 : 0
+
+  provider = aws.peer
+
+  destination_cidr_block    = data.aws_vpc.vpc.cidr_block
+  route_table_id            = var.peer_route_4_table_id
+  vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peer.id
 }
 
 resource "aws_route" "peer_route_5" {
-  provider                  = "aws.peer"
-  count                     = "${var.peer_route_5_enable ? 1 : 0}"
-  route_table_id            = "${var.peer_route_5_table_id}"
-  destination_cidr_block    = "${var.vpc_cidr_range}"
-  vpc_peering_connection_id = "${aws_vpc_peering_connection.vpc_peer.id}"
+  count = var.peer_route_5_enable ? 1 : 0
+
+  provider = aws.peer
+
+  destination_cidr_block    = data.aws_vpc.vpc.cidr_block
+  route_table_id            = var.peer_route_5_table_id
+  vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peer.id
 }
+
