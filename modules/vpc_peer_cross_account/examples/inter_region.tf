@@ -16,7 +16,7 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 
 module "base_network" {
-  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_basenetwork?ref=v0.12.0"
+  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_basenetwork?ref=v0.12.4"
 
   cidr_range          = "172.18.0.0/16"
   custom_azs          = ["us-west-2a", "us-west-2b"]
@@ -26,7 +26,7 @@ module "base_network" {
 }
 
 module "base_network_target" {
-  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_basenetwork?ref=v0.12.0"
+  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_basenetwork?ref=v0.12.4"
 
   cidr_range          = "172.19.0.0/16"
   custom_azs          = ["us-east-1a", "us-east-1b"]
@@ -40,18 +40,14 @@ module "base_network_target" {
 }
 
 module "cross_account_vpc_peer" {
-  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_peer//modules/vpc_peer_cross_account?ref=v0.12.0"
+  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_peer//modules/vpc_peer_cross_account?ref=v0.12.2"
 
-  peer_route_1_enable   = true
-  peer_route_1_table_id = element(module.base_network_target.private_route_tables, 0)
-  peer_route_2_enable   = true
-  peer_route_2_table_id = element(module.base_network_target.private_route_tables, 1)
-  peer_vpc_id           = module.base_network_target.vpc_id
-  vpc_id                = module.base_network.vpc_id
-  vpc_route_1_enable    = true
-  vpc_route_1_table_id  = element(module.base_network.private_route_tables, 0)
-  vpc_route_2_enable    = true
-  vpc_route_2_table_id  = element(module.base_network.private_route_tables, 1)
+  peer_route_tables       = module.base_network_target.private_route_tables
+  peer_route_tables_count = 2
+  peer_vpc_id             = module.base_network_target.vpc_id
+  vpc_id                  = module.base_network.vpc_id
+  vpc_route_tables        = module.base_network.private_route_tables
+  vpc_route_tables_count  = 2
 
   providers = {
     aws.peer = aws.peer

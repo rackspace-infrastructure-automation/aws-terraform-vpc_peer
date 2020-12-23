@@ -49,8 +49,12 @@ module "vpc_peer" {
 
   allow_remote_vpc_dns_resolution = true
   auto_accept                     = true
+  peer_route_tables               = concat(module.peer_base_network.public_route_tables, module.peer_base_network.private_route_tables)
+  peer_route_tables_count         = 3
   peer_vpc_id                     = module.peer_base_network.vpc_id
   vpc_id                          = module.base_network.vpc_id
+  vpc_route_tables                = concat(module.base_network.public_route_tables, module.base_network.private_route_tables)
+  vpc_route_tables_count          = 3
 }
 
 data "aws_caller_identity" "current" {
@@ -59,16 +63,12 @@ data "aws_caller_identity" "current" {
 module "cross_account_vpc_peer" {
   source = "../../module/modules/vpc_peer_cross_account"
 
-  peer_route_1_enable   = true
-  peer_route_1_table_id = element(module.remote_peer_base_network.private_route_tables, 0)
-  peer_route_2_enable   = true
-  peer_route_2_table_id = element(module.remote_peer_base_network.private_route_tables, 1)
-  peer_vpc_id           = module.remote_peer_base_network.vpc_id
-  vpc_id                = module.base_network.vpc_id
-  vpc_route_1_enable    = true
-  vpc_route_1_table_id  = element(module.base_network.private_route_tables, 0)
-  vpc_route_2_enable    = true
-  vpc_route_2_table_id  = element(module.base_network.private_route_tables, 1)
+  peer_route_tables       = concat(module.remote_peer_base_network.public_route_tables, module.remote_peer_base_network.private_route_tables)
+  peer_route_tables_count = 3
+  peer_vpc_id             = module.remote_peer_base_network.vpc_id
+  vpc_id                  = module.base_network.vpc_id
+  vpc_route_tables        = concat(module.base_network.public_route_tables, module.base_network.private_route_tables)
+  vpc_route_tables_count  = 3
 
   providers = {
     aws.peer = aws.ohio

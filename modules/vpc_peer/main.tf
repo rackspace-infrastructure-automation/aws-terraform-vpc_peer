@@ -8,7 +8,7 @@
 *
 * ```
 * module "vpc_peer" {
-*  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_peer//modules/vpc_peer?ref=v0.12.0"
+*  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_peer//modules/vpc_peer?ref=v0.12.2"
 *
 *  vpc_id                          = module.base_network.vpc_id
 *  peer_vpc_id                     = module.peer_base_network.vpc_id
@@ -16,16 +16,12 @@
 *  allow_remote_vpc_dns_resolution = true
 *
 *  #  VPC Routes
-*  vpc_route_1_enable   = true
-*  vpc_route_1_table_id = element(module.base_network.private_route_tables, 0)
-*  vpc_route_2_enable   = true
-*  vpc_route_2_table_id = element(module.base_network.private_route_tables, 1)
+*  vpc_route_tables       = module.base_network.private_route_tables
+*  vpc_route_tables_count = 2
 *
 *  # Peer Routes
-*  peer_route_1_enable   = true
-*  peer_route_1_table_id = element(module.peer_base_network.private_route_tables, 0)
-*  peer_route_2_enable   = true
-*  peer_route_2_table_id = element(module.peer_base_network.private_route_tables, 1)
+*  peer_route_tables       = module.peer_base_network.private_route_tables
+*  peer_route_tables_count = 2
 * }
 * ```
 *
@@ -42,6 +38,11 @@
 *
 * - `peer_cidr_range`
 * - `vpc_cidr_range`
+*
+* New variables `peer_route_tables` and `peer_route_tables_count` were added to replace the functionality of the various `peer_route_x_enable` and `peer_route_x_table_id` variables.  These deprecated variables and resources will continue to work as expected, but will be removed in a future release.
+*
+* New variables `vpc_route_tables` and `vpc_route_tables_count` were added to replace the functionality of the various `vpc_route_x_enable` and `vpc_route_x_table_id` variables.  These deprecated variables and resources will continue to work as expected, but will be removed in a future release.
+*
 */
 
 terraform {
@@ -83,6 +84,22 @@ resource "aws_vpc_peering_connection" "vpc_peer" {
 }
 
 # VPC Route Tables
+resource "aws_route" "vpc" {
+  count = var.vpc_route_tables_count
+
+  destination_cidr_block    = data.aws_vpc.peer.cidr_block
+  route_table_id            = element(var.vpc_route_tables, count.index)
+  vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peer.id
+
+  depends_on = [
+    aws_route.vpc_route_1,
+    aws_route.vpc_route_2,
+    aws_route.vpc_route_3,
+    aws_route.vpc_route_4,
+    aws_route.vpc_route_5,
+  ]
+}
+
 resource "aws_route" "vpc_route_1" {
   count = var.vpc_route_1_enable ? 1 : 0
 
@@ -124,6 +141,22 @@ resource "aws_route" "vpc_route_5" {
 }
 
 # Peer VPC Route Tables
+resource "aws_route" "peer" {
+  count = var.peer_route_tables_count
+
+  destination_cidr_block    = data.aws_vpc.vpc.cidr_block
+  route_table_id            = element(var.peer_route_tables, count.index)
+  vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peer.id
+
+  depends_on = [
+    aws_route.peer_route_1,
+    aws_route.peer_route_2,
+    aws_route.peer_route_3,
+    aws_route.peer_route_4,
+    aws_route.peer_route_5,
+  ]
+}
+
 resource "aws_route" "peer_route_1" {
   count = var.peer_route_1_enable ? 1 : 0
 

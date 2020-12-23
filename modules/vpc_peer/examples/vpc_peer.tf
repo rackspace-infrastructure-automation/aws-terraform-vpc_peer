@@ -17,7 +17,7 @@ module "base_network" {
 }
 
 module "peer_base_network" {
-  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_basenetwork?ref=v0.12.0"
+  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_basenetwork?ref=v0.12.4"
 
   cidr_range          = "10.0.0.0/16"
   name                = "VPC-Peer-Accepter"
@@ -26,21 +26,15 @@ module "peer_base_network" {
 }
 
 module "vpc_peer" {
-  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_peer//modules/vpc_peer?ref=v0.12.0"
+  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_peer//modules/vpc_peer?ref=v0.12.2"
 
   allow_remote_vpc_dns_resolution = true
   auto_accept                     = true
-  peer_cidr_range                 = "10.0.0.0/16"
-  peer_route_1_enable             = true
-  peer_route_1_table_id           = element(module.peer_base_network.private_route_tables, 0)
-  peer_route_2_enable             = true
-  peer_route_2_table_id           = element(module.peer_base_network.private_route_tables, 1)
+  peer_route_tables               = module.peer_base_network.private_route_tables
+  peer_route_tables_count         = 2
   peer_vpc_id                     = module.peer_base_network.vpc_id
   vpc_cidr_range                  = "172.18.0.0/16"
   vpc_id                          = module.base_network.vpc_id
-  vpc_route_1_enable              = true
-  vpc_route_1_table_id            = element(module.base_network.private_route_tables, 0)
-  vpc_route_2_enable              = true
-  vpc_route_2_table_id            = element(module.base_network.private_route_tables, 1)
+  vpc_route_tables                = module.base_network.private_route_tables
+  vpc_route_tables_count          = 2
 }
-
