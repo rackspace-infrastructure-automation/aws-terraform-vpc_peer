@@ -31,25 +31,19 @@ can be used to create the required role.
 
 ```HCL
 module "cross_account_vpc_peer" {
-  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_peer//modules/vpc_peer_cross_account?ref=v0.12.0"
+  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-vpc_peer//modules/vpc_peer_cross_account?ref=v0.12.2"
 
   vpc_id = module.base_network.vpc_id
 
   # VPC in acceptor account vpc-XXXXXXXXX
-  peer_vpc_id = "vpc-XXXXXXXXX"
+  peer_vpc_id = module.peer_base_network.vpc_id
 
-  vpc_route_1_enable   = true
-  vpc_route_1_table_id = element(module.base_network.private_route_tables, 0)
-  vpc_route_2_enable   = true
-  vpc_route_2_table_id = element(module.base_network.private_route_tables, 1)
+  vpc_route_tables       = module.base_network.private_route_tables
+  vpc_route_tables_count = 2
 
   # Acceptor Route Tables
-  # Acceptor Route Table ID rtb-XXXXXXX
-  peer_route_1_enable = true
-
-  peer_route_1_table_id = "rtb-XXXXX"
-  peer_route_2_enable   = true
-  peer_route_2_table_id = "rtb-XXXXX"
+  peer_route_tables       = module.peer_base_network.private_route_tables
+  peer_route_tables_count = 2
 
   providers = {
     aws.peer = aws.peer
@@ -106,6 +100,10 @@ The following module variables were removed and are no longer neccessary:
 - `peer_region`
 - `vpc_cidr_range`
 
+New variables `peer_route_tables` and `peer_route_tables_count` were added to replace the functionality of the various `peer_route_x_enable` and `peer_route_x_table_id` variables.  These deprecated variables and resources will continue to work as expected, but will be removed in a future release.
+
+New variables `vpc_route_tables` and `vpc_route_tables_count` were added to replace the functionality of the various `vpc_route_x_enable` and `vpc_route_x_table_id` variables.  These deprecated variables and resources will continue to work as expected, but will be removed in a future release.
+
 ## Providers
 
 | Name | Version |
@@ -119,29 +117,33 @@ The following module variables were removed and are no longer neccessary:
 |------|-------------|------|---------|:-----:|
 | allow\_remote\_vpc\_dns\_resolution | Allow a local VPC to resolve public DNS hostnames to private IP addresses when queried from instances in the peer VPC. | `bool` | `true` | no |
 | environment | Application environment for which this network is being created. one of: ('Development', 'Integration', 'PreProduction', 'Production', 'QA', 'Staging', 'Test') | `string` | `"Development"` | no |
-| peer\_route\_1\_enable | Enables Peer Route Table 1. Allowed values: true, false | `bool` | `false` | no |
-| peer\_route\_1\_table\_id | ID of VPC Route table #1 rtb-XXXXXX | `string` | `""` | no |
-| peer\_route\_2\_enable | Enables Peer Route Table 2. Allowed values: true, false | `bool` | `false` | no |
-| peer\_route\_2\_table\_id | ID of VPC Route table #2 rtb-XXXXXX | `string` | `""` | no |
-| peer\_route\_3\_enable | Enables Peer Route Table 3. Allowed values: true, false | `bool` | `false` | no |
-| peer\_route\_3\_table\_id | ID of VPC Route table #3 rtb-XXXXXX | `string` | `""` | no |
-| peer\_route\_4\_enable | Enables Peer Route Table 4. Allowed values: true, false | `bool` | `false` | no |
-| peer\_route\_4\_table\_id | ID of VPC Route table #4 rtb-XXXXXX | `string` | `""` | no |
-| peer\_route\_5\_enable | Enables Peer Route Table 5. Allowed values: true, false | `bool` | `false` | no |
-| peer\_route\_5\_table\_id | ID of VPC Route table #5 rtb-XXXXXX | `string` | `""` | no |
+| peer\_route\_1\_enable | Enables Peer Route Table 1. (Deprecated) This variable will be removed in future releases in favor of the `peer_route_tables` and `peer_route_tables_count` variables. | `bool` | `false` | no |
+| peer\_route\_1\_table\_id | ID of VPC Route table #1 rtb-XXXXXX (Deprecated) This variable will be removed in future releases in favor of the `peer_route_tables` and `peer_route_tables_count` variables. | `string` | `""` | no |
+| peer\_route\_2\_enable | Enables Peer Route Table 2. (Deprecated) This variable will be removed in future releases in favor of the `peer_route_tables` and `peer_route_tables_count` variables. | `bool` | `false` | no |
+| peer\_route\_2\_table\_id | ID of VPC Route table #2 rtb-XXXXXX (Deprecated) This variable will be removed in future releases in favor of the `peer_route_tables` and `peer_route_tables_count` variables. | `string` | `""` | no |
+| peer\_route\_3\_enable | Enables Peer Route Table 3. (Deprecated) This variable will be removed in future releases in favor of the `peer_route_tables` and `peer_route_tables_count` variables. | `bool` | `false` | no |
+| peer\_route\_3\_table\_id | ID of VPC Route table #3 rtb-XXXXXX (Deprecated) This variable will be removed in future releases in favor of the `peer_route_tables` and `peer_route_tables_count` variables. | `string` | `""` | no |
+| peer\_route\_4\_enable | Enables Peer Route Table 4. (Deprecated) This variable will be removed in future releases in favor of the `peer_route_tables` and `peer_route_tables_count` variables. | `bool` | `false` | no |
+| peer\_route\_4\_table\_id | ID of VPC Route table #4 rtb-XXXXXX (Deprecated) This variable will be removed in future releases in favor of the `peer_route_tables` and `peer_route_tables_count` variables. | `string` | `""` | no |
+| peer\_route\_5\_enable | Enables Peer Route Table 5. (Deprecated) This variable will be removed in future releases in favor of the `peer_route_tables` and `peer_route_tables_count` variables. | `bool` | `false` | no |
+| peer\_route\_5\_table\_id | ID of VPC Route table #5 rtb-XXXXXX (Deprecated) This variable will be removed in future releases in favor of the `peer_route_tables` and `peer_route_tables_count` variables. | `string` | `""` | no |
+| peer\_route\_tables | A list of all peer route tables IDs | `list(string)` | `[]` | no |
+| peer\_route\_tables\_count | The number of peer route tables | `number` | `0` | no |
 | peer\_vpc\_id | The ID of the VPC with which you are creating the VPC Peering Connection. | `string` | n/a | yes |
 | tags | Custom tags to apply to all resources. | `map(string)` | `{}` | no |
 | vpc\_id | The ID of the requester VPC. | `string` | n/a | yes |
-| vpc\_route\_1\_enable | Enables VPC Route Table 1. Allowed values: true, false | `bool` | `false` | no |
-| vpc\_route\_1\_table\_id | ID of VPC Route table #1 rtb-XXXXXX | `string` | `""` | no |
-| vpc\_route\_2\_enable | Enables VPC Route Table 2. Allowed values: true, false | `bool` | `false` | no |
-| vpc\_route\_2\_table\_id | ID of VPC Route table #2 rtb-XXXXXX | `string` | `""` | no |
-| vpc\_route\_3\_enable | Enables VPC Route Table 3. Allowed values: true, false | `bool` | `false` | no |
-| vpc\_route\_3\_table\_id | ID of VPC Route table #3 rtb-XXXXXX | `string` | `""` | no |
-| vpc\_route\_4\_enable | Enables VPC Route Table 4. Allowed values: true, false | `bool` | `false` | no |
-| vpc\_route\_4\_table\_id | ID of VPC Route table #4 rtb-XXXXXX | `string` | `""` | no |
-| vpc\_route\_5\_enable | Enables VPC Route Table 5. Allowed values: true, false | `bool` | `false` | no |
-| vpc\_route\_5\_table\_id | ID of VPC Route table #5 rtb-XXXXXX | `string` | `""` | no |
+| vpc\_route\_1\_enable | Enables VPC Route Table 1. (Deprecated) This variable will be removed in future releases in favor of the `vpc_route_tables` and `vpc_route_tables_count` variables. | `bool` | `false` | no |
+| vpc\_route\_1\_table\_id | ID of VPC Route table #1 rtb-XXXXXX (Deprecated) This variable will be removed in future releases in favor of the `vpc_route_tables` and `vpc_route_tables_count` variables. | `string` | `""` | no |
+| vpc\_route\_2\_enable | Enables VPC Route Table 2. (Deprecated) This variable will be removed in future releases in favor of the `vpc_route_tables` and `vpc_route_tables_count` variables. | `bool` | `false` | no |
+| vpc\_route\_2\_table\_id | ID of VPC Route table #2 rtb-XXXXXX (Deprecated) This variable will be removed in future releases in favor of the `vpc_route_tables` and `vpc_route_tables_count` variables. | `string` | `""` | no |
+| vpc\_route\_3\_enable | Enables VPC Route Table 3. (Deprecated) This variable will be removed in future releases in favor of the `vpc_route_tables` and `vpc_route_tables_count` variables. | `bool` | `false` | no |
+| vpc\_route\_3\_table\_id | ID of VPC Route table #3 rtb-XXXXXX (Deprecated) This variable will be removed in future releases in favor of the `vpc_route_tables` and `vpc_route_tables_count` variables. | `string` | `""` | no |
+| vpc\_route\_4\_enable | Enables VPC Route Table 4. (Deprecated) This variable will be removed in future releases in favor of the `vpc_route_tables` and `vpc_route_tables_count` variables. | `bool` | `false` | no |
+| vpc\_route\_4\_table\_id | ID of VPC Route table #4 rtb-XXXXXX (Deprecated) This variable will be removed in future releases in favor of the `vpc_route_tables` and `vpc_route_tables_count` variables. | `string` | `""` | no |
+| vpc\_route\_5\_enable | Enables VPC Route Table 5. (Deprecated) This variable will be removed in future releases in favor of the `vpc_route_tables` and `vpc_route_tables_count` variables. | `bool` | `false` | no |
+| vpc\_route\_5\_table\_id | ID of VPC Route table #5 rtb-XXXXXX (Deprecated) This variable will be removed in future releases in favor of the `vpc_route_tables` and `vpc_route_tables_count` variables. | `string` | `""` | no |
+| vpc\_route\_tables | A list of all VPC route tables IDs | `list(string)` | `[]` | no |
+| vpc\_route\_tables\_count | The number of VPC route tables | `number` | `0` | no |
 
 ## Outputs
 
