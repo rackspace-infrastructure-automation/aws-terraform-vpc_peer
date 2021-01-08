@@ -151,9 +151,7 @@ resource "aws_vpc_peering_connection" "vpc_peer" {
   peer_vpc_id   = var.peer_vpc_id
   vpc_id        = var.vpc_id
 
-  tags = {
-    Side = "Requester"
-  }
+  tags = merge(local.tags, var.tags, {"Side": "Requester"})
 }
 
 # Accepter's side of the connection.
@@ -163,9 +161,7 @@ resource "aws_vpc_peering_connection_accepter" "peer" {
   auto_accept               = true
   vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peer.id
 
-  tags = {
-    Side = "Accepter"
-  }
+  tags = merge(local.tags, var.tags, {"Side": "Accepter"})
 }
 
 # As options can't be set until the connection has been accepted
